@@ -1,0 +1,54 @@
+# Backend Learning Journey — Java Fundamentals
+
+Recap-level Java refresher before moving to Spring Boot.
+
+## Setup
+- JDK 24, IntelliJ IDEA Community
+- Plain Java project (no Maven/Gradle) — build tools deferred until Spring Boot, where Spring Initializr generates them anyway
+- Compiling/running manually via `javac`/`java` from terminal, not IDE run button, to actually see compiler output
+
+## Topics Covered
+
+### 1. Hello World — compiler vs runtime errors
+- Misspelled `main` or missing `public` → compiles fine, fails at runtime (`Main method not found`). The JVM enforces the exact signature `public static void main(String[] args)`; it can't tell you *which* part is wrong.
+- Missing semicolon → fails at compile time (`javac` catches it before anything runs).
+- **Lesson:** syntax errors are compile-time; semantically-invalid-but-grammatically-fine code (like a missing `main`) only surfaces at runtime.
+
+### 2. Static typing — int vs double division
+- `int a=5, b=2; a/b` → `2` (integer division truncates, doesn't round)
+- `double c=5, d=2; c/d` → `2.5`
+- `(double) a / b` → forces one operand to double *before* division happens, giving `2.5`
+- **Lesson:** the operation itself is integer division when both operands are `int` — the fraction is discarded during the calculation, not after.
+
+### 3. Scanner input — the buffer bug
+- `nextInt()` leaves a trailing `\n` in the input buffer.
+- Calling `nextLine()` right after `nextInt()` reads that leftover empty line instead of waiting for new input → `charAt(0)` on an empty string throws `StringIndexOutOfBoundsException`.
+- **Fix:** insert a throwaway `sc.nextLine();` after `nextInt()`/`nextDouble()` calls to consume the leftover newline before reading a line-based token.
+
+### 4. Git / .gitignore — UTF-16 BOM issue
+- `.gitignore` created via PowerShell `echo >`/`>>` was silently written as **UTF-16 with a BOM** (`FF FE` byte prefix), not UTF-8.
+- `type .gitignore` displayed it correctly (Windows handles the encoding transparently), but `git` couldn't match any ignore pattern against it — so `.class`/`.idea/` files kept getting tracked despite a seemingly correct `.gitignore`.
+- **Fix:** recreate the file explicitly as UTF-8 without BOM:
+  ```powershell
+  [System.IO.File]::WriteAllLines("$PWD\.gitignore", @(".idea/", "out/", "*.class"), [System.Text.UTF8Encoding]::new($false))
+  ```
+- **Lesson:** `.gitignore` only stops *new* untracked files from being staged — already-tracked files need `git rm --cached` regardless of ignore rules. Also: explicitly running `git add <specific file>` overrides ignore rules entirely.
+
+### 5. Packages
+- Package declaration (`package banking;`) must be the first line of the file, and the folder structure must physically mirror the package name (`src/banking/ClassName.java`).
+- Compile from the parent of the package folder: `javac banking\*.java`
+- Run with the fully-qualified name: `java banking.Main` (not just `java Main`)
+
+### 6. OOP — encapsulation & inheritance
+Built `BankAccount` (private fields, public deposit/withdraw, no direct balance setter) and `SavingsAccount extends BankAccount` (adds `interestRate`, overrides `withdraw` to enforce a $500 minimum via `super.getBalance()`/`super.withdraw()`).
+- **Access modifier lesson:** `protected` allows same-package access too, not just subclasses — so same-folder code "accidentally" compiles even when `public` was the intended/correct modifier. Real projects split into packages (`controller`/`service`/`repository`, matching Spring Boot's structure), where this distinction actually bites.
+
+### 7. Interfaces — decoupling
+Built `Transaction` interface with `execute(BankAccount account)`, implemented by `DepositTransaction` and `WithdrawTransaction`. Looped through a `Transaction[]` calling `.execute()` polymorphically.
+- **Why this matters:** the calling code (`Main`'s loop) has zero knowledge of which concrete class it's running — it only knows "this is a `Transaction`." Adding a new transaction type never requires touching the loop.
+- **Direct link to Spring Boot:** this is the hand-built version of what `@Autowired` does — injecting *some* implementation of an interface without the caller knowing or caring which one.
+
+## Next Up
+- Abstract classes vs interfaces (when to choose which)
+- Custom exceptions (`InsufficientFundsException`) — precursor to `@ExceptionHandler`/`@ControllerAdvice`
+- Then: Maven/Gradle, Spring Boot fundamentals
