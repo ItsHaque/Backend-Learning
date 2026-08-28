@@ -1,6 +1,6 @@
 package banking;
 
-public class SavingsAccount extends BankAccount{
+public class SavingsAccount extends Account{
     private double interestRate;
     SavingsAccount(int accountNumber, double balance, double interestRate){
         super(accountNumber,balance);
@@ -13,6 +13,7 @@ public class SavingsAccount extends BankAccount{
             System.out.println("insufficient amount");
             return;
         }
-        super.withdraw(amount);
+        super.setBalance(super.getBalance() - amount);
+        System.out.println("Withdraw successful. New Balance: " + super.getBalance());
     }
 }
