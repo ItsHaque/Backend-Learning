@@ -1,9 +1,9 @@
 # Backend Learning Journey — Java Fundamentals
 
-Recap-level Java refresher before moving to Spring Boot.
+Recap-level Java refresher before moving to Spring Boot. Notes below cover what was built, what broke, and why — not just a task list.
 
 ## Setup
-- JDK 24, IntelliJ IDEA Community
+- JDK 23, IntelliJ IDEA Community
 - Plain Java project (no Maven/Gradle) — build tools deferred until Spring Boot, where Spring Initializr generates them anyway
 - Compiling/running manually via `javac`/`java` from terminal, not IDE run button, to actually see compiler output
 
@@ -48,7 +48,18 @@ Built `Transaction` interface with `execute(BankAccount account)`, implemented b
 - **Why this matters:** the calling code (`Main`'s loop) has zero knowledge of which concrete class it's running — it only knows "this is a `Transaction`." Adding a new transaction type never requires touching the loop.
 - **Direct link to Spring Boot:** this is the hand-built version of what `@Autowired` does — injecting *some* implementation of an interface without the caller knowing or caring which one.
 
+### 8. Abstract classes — shared state, and getter/setter discipline
+Refactored `BankAccount`/`SavingsAccount` to extend `abstract class Account`, which holds private `accountNumber`/`balance` fields, concrete `deposit()`, and an abstract `withdraw()` that each subclass must define.
+- **Mutation bug caught along the way:** a getter (`getBalance()`) only *returns* a value — it can't be used to mutate state (`super.getBalance() -= amount` doesn't work). Subclasses need a `protected setBalance()` to change parent state without touching the private field directly.
+- **Why go through setters even from a subclass** (even though `protected` fields would technically allow direct access): if `Account` later adds validation or logging inside `setBalance()`, every subclass benefits automatically. Direct field mutation bypasses that silently.
+
+### 9. Interface vs abstract class — when to use which
+Built both `Transaction` (interface) and `Account` (abstract class) and compared them directly:
+- **Abstract class** fits an "is-a" relationship with **shared state**: `BankAccount`/`SavingsAccount` both genuinely *have* a balance and account number, plus share real behavior (`deposit()`).
+- **Interface** fits a "can-do" relationship with **no shared state**: `DepositTransaction`/`WithdrawTransaction` share nothing structurally except "both are executable" — no common fields, no common base behavior.
+- **Rule of thumb:** shared state + partial shared behavior → abstract class. Pure contract, unrelated implementations → interface.
+- Java also only allows single class inheritance but multiple interface implementation — a practical reason interfaces are the only option when a class needs to fulfill several unrelated contracts at once.
+
 ## Next Up
-- Abstract classes vs interfaces (when to choose which)
 - Custom exceptions (`InsufficientFundsException`) — precursor to `@ExceptionHandler`/`@ControllerAdvice`
 - Then: Maven/Gradle, Spring Boot fundamentals
