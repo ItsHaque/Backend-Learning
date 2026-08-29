@@ -60,6 +60,12 @@ Built both `Transaction` (interface) and `Account` (abstract class) and compared
 - **Rule of thumb:** shared state + partial shared behavior → abstract class. Pure contract, unrelated implementations → interface.
 - Java also only allows single class inheritance but multiple interface implementation — a practical reason interfaces are the only option when a class needs to fulfill several unrelated contracts at once.
 
+### 10. Custom exceptions
+- `InsufficientBalanceException extends Exception` (checked), thrown from `withdraw()` instead of printed.
+- Checked exceptions propagate through every layer — `Transaction.execute()` needed `throws` too since it calls a throwing method.
+- Per-transaction `try-catch` (not one around the whole loop) — one failed transaction shouldn't abort the rest.
+- `e.getMessage()`, not `println(e)` — avoids leaking internal class name in output.
+- Bug caught: `execute()` was typed to `BankAccount` not `Account`, silently breaking polymorphism from Task 6/7. Fixed by typing to the supertype.
+
 ## Next Up
-- Custom exceptions (`InsufficientFundsException`) — precursor to `@ExceptionHandler`/`@ControllerAdvice`
-- Then: Maven/Gradle, Spring Boot fundamentals
+- Maven/Gradle, Spring Boot fundamentals
