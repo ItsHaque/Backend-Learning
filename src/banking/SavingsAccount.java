@@ -8,11 +8,8 @@ public class SavingsAccount extends Account{
     }
 
     @Override
-    public void withdraw(double amount) {
-        if(super.getBalance()-amount <500){
-            System.out.println("insufficient amount");
-            return;
-        }
+    public void withdraw(double amount) throws InsufficientBalanceException{
+        if(super.getBalance()-amount <500) throw new InsufficientBalanceException("Insufficient Balance (Minimum fund requirement violation)");
         super.setBalance(super.getBalance() - amount);
         System.out.println("Withdraw successful. New Balance: " + super.getBalance());
     }

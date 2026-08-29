@@ -7,7 +7,7 @@ public class DepositTransaction implements Transaction{
     }
 
     @Override
-    public void execute(BankAccount account) {
+    public void execute(Account account) {
         account.deposit(this.amount);
     }
 }

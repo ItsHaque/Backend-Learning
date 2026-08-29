@@ -7,7 +7,7 @@ public class WithdrawTransaction implements Transaction{
     }
 
     @Override
-    public void execute(BankAccount account) {
+    public void execute(Account account) throws InsufficientBalanceException{
         account.withdraw(this.amount);
     }
 }

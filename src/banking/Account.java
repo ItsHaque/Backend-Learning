@@ -3,7 +3,7 @@ package banking;
 abstract class Account {
     private int accountNumber;
     private double balance;
-    Account(int accountNumber, double balance){
+    public Account(int accountNumber, double balance){
         this.setAccountNumber(accountNumber);
         this.setBalance(balance);
     }
@@ -26,5 +26,5 @@ abstract class Account {
         this.setBalance(this.getBalance() + amount);
         System.out.println("Deposit successful. New Balance: " + this.balance);
     }
-    abstract void withdraw(double amount);
+    abstract void withdraw(double amount) throws InsufficientBalanceException;
 }
